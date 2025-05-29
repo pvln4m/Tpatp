@@ -1,0 +1,897 @@
+
+<!DOCTYPE html>
+
+<html lang="ru">
+<head>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta charset="utf-8"/>
+<title>Маршруты - Тобольское ПАТП</title>
+<style>
+        body { font-family: Arial, sans-serif; background-color: #f8f8f8; color: #003366; }
+        .container { max-width: 1000px; margin: 0 auto; padding: 20px; background: #fff; border-radius: 10px; }
+        .logo { display: flex; justify-content: space-between; align-items: center; }
+        .logo img { height: 60px; }
+        h1, h2 { text-align: center; color: #003366; }
+        .route { margin: 20px 0; padding: 15px; border: 1px solid #ccc; border-radius: 10px; background: #f0f4f8; }
+        .route h3 { margin-bottom: 10px; }
+        .times { margin-top: 5px; padding-left: 20px; }
+    </style>
+</head>
+<body>
+<div class="container">
+<h1>Расписание маршрутов Тобольского ПАТП</h1><h2>Вместе к лучшему!</h2><h2>Приятной поездки!</h2>
+<form id="routeForm">
+<label for="driverName">ФИО водителя:</label>
+<input id="driverName" name="driverName" required="" type="text"/><br/><br/>
+<label for="driverNumber">Номер водителя:</label>
+<input id="driverNumber" name="driverNumber" required="" type="text"/><br/><br/>
+<label for="routeSelector">Выберите маршрут:</label>
+<select id="routeSelector">
+            [<option value="">-- Выберите --</option>, <option value="1">Маршрут №1</option>, <option value="2">Маршрут №2</option>, <option value="3">Маршрут №3</option>, <option value="3Д">Маршрут №3Д</option>, <option value="4">Маршрут №4</option>, <option value="5">Маршрут №5</option>, <option value="6П">Маршрут №6П</option>, <option value="6Р">Маршрут №6Р</option>, <option value="7">Маршрут №7</option>, <option value="8">Маршрут №8</option>, <option value="9">Маршрут №9</option>, <option value="10">Маршрут №10</option>, <option value="10а">Маршрут №10а</option>, <option value="11">Маршрут №11</option>, <option value="12">Маршрут №12</option>, <option value="14">Маршрут №14</option>, <option value="15">Маршрут №15</option>, <option value="16">Маршрут №16</option>, <option value="17">Маршрут №17</option>, <option value="19">Маршрут №19</option>, <option value="19Э">Маршрут №19Э</option>, <option value="20">Маршрут №20</option>, <option value="20Р">Маршрут №20Р</option>, <option value="22">Маршрут №22</option>, <option value="24">Маршрут №24</option>, <option value="26">Маршрут №26</option>, <option value="101">Маршрут №101</option>, <option value="102">Маршрут №102</option>, <option value="103">Маршрут №103</option>, <option value="104">Маршрут №104</option>, <option value="106">Маршрут №106</option>, <option value="107">Маршрут №107</option>, <option value="108">Маршрут №108</option>, <option value="109">Маршрут №109</option>, <option value="110">Маршрут №110</option>, <option value="112">Маршрут №112</option>, <option value="113">Маршрут №113</option>, <option value="115">Маршрут №115</option>, <option value="116">Маршрут №116</option>, <option value="119">Маршрут №119</option>, <option value="120">Маршрут №120</option>, <option value="120Р">Маршрут №120Р</option>, <option value="124">Маршрут №124</option>, <option value="125">Маршрут №125</option>, <option value="130">Маршрут №130</option>, <option value="501">Маршрут №501</option>, <option value="502Х">Маршрут №502Х</option>, <option value="502Б">Маршрут №502Б</option>, <option value="502ХБ">Маршрут №502ХБ</option>, <option value="503">Маршрут №503</option>, <option value="504">Маршрут №504</option>, <option value="507">Маршрут №507</option>, <option value="534">Маршрут №534</option>, <option value="535">Маршрут №535</option>, <option value="536">Маршрут №536</option>, <option value="537">Маршрут №537</option>, <option value="538">Маршрут №538</option>, <option value="539">Маршрут №539</option>, <option value="555">Маршрут №555</option>, <option value="555Э">Маршрут №555Э</option>, <option value="561">Маршрут №561</option>, <option value="715">Маршрут №715</option>]
+        </select>
+<button type="submit">Отправить выбор маршрута</button>
+</form>
+<div id="confirmationMessage" style="display:none; color:green; font-weight:bold; margin-top:10px;">Информация отправлена диспетчеру!</div>
+<script>
+    document.getElementById('routeSelector').addEventListener('change', function () {
+        var selectedRoute = this.value;
+        var routes = document.querySelectorAll('.route');
+        routes.forEach(function(route) {
+            if (!selectedRoute || route.dataset.route === selectedRoute) {
+                route.style.display = 'block';
+            } else {
+                route.style.display = 'none';
+            }
+        });
+    });
+
+    document.getElementById('routeForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+        var selectedRoute = document.getElementById('routeSelector').value;
+        if (!selectedRoute) return;
+
+        // Показать сообщение для диспетчера на 5 секунд
+        var confirmation = document.getElementById('confirmationMessage');
+        confirmation.textContent = 'Информация отправлена диспетчеру!';
+        confirmation.style.display = 'block';
+        setTimeout(function () {
+            confirmation.style.display = 'none';
+        }, 5000);
+
+        // Показать статус "ЗАНЯТ" на 5 секунд
+        var selectedDiv = document.querySelector('.route[data-route="' + selectedRoute + '"]');
+        if (selectedDiv && !selectedDiv.querySelector('.status-busy')) {
+            var status = document.createElement('div');
+            status.className = 'status-busy';
+            status.style = 'color:red; font-weight:bold; margin-top:10px;';
+            status.textContent = 'Статус: ЗАНЯТ';
+            selectedDiv.appendChild(status);
+
+            setTimeout(function () {
+                if (status.parentNode) {
+                    status.parentNode.removeChild(status);
+                }
+            }, 5000);
+        }
+    });
+    </script>
+<div class="route" data-route="1">
+<div class="radio-time"><label><input name="time_1" type="radio" value="morning"/> Утро</label><label><input name="time_1" type="radio" value="evening"/> Вечер</label></div><h2>Маршрут №1: 7 мкр. — улица Пушкина</h2>
+<h3>1. Утро:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 06:30, 07:15, 08:00<br/>
+<strong>Отправление от конечной:</strong> 06:30, 07:15, 08:00
+    </div>
+<h3>2. Вечер:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 17:30, 18:15, 19:00<br/>
+<strong>Отправление от конечной:</strong> 17:30, 18:15, 19:00
+    </div>
+</div>
+<div class="route" data-route="2">
+<div class="radio-time"><label><input name="time_2" type="radio" value="morning"/> Утро</label><label><input name="time_2" type="radio" value="evening"/> Вечер</label></div><h2>Маршрут №2: ДК "Синтез" — переулок Рабочий</h2>
+<h3>1. Утро:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 06:30, 07:15, 08:00<br/>
+<strong>Отправление от конечной:</strong> 06:30, 07:15, 08:00
+    </div>
+<h3>2. Вечер:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 17:30, 18:15, 19:00<br/>
+<strong>Отправление от конечной:</strong> 17:30, 18:15, 19:00
+    </div>
+</div>
+<div class="route" data-route="3">
+<div class="radio-time"><label><input name="time_3" type="radio" value="morning"/> Утро</label><label><input name="time_3" type="radio" value="evening"/> Вечер</label></div><h2>Маршрут №3: Центр гимнастики — ДОЗ</h2>
+<h3>1. Утро:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 06:30, 07:15, 08:00<br/>
+<strong>Отправление от конечной:</strong> 06:30, 07:15, 08:00
+    </div>
+<h3>2. Вечер:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 17:30, 18:15, 19:00<br/>
+<strong>Отправление от конечной:</strong> 17:30, 18:15, 19:00
+    </div>
+</div>
+<div class="route" data-route="3Д">
+<div class="radio-time"><label><input name="time_3Д" type="radio" value="morning"/> Утро</label><label><input name="time_3Д" type="radio" value="evening"/> Вечер</label></div><h2>Маршрут №3Д: 7 мкр. — База техучастка (лето)</h2>
+<h3>1. Утро:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 06:30, 07:15, 08:00<br/>
+<strong>Отправление от конечной:</strong> 06:30, 07:15, 08:00
+    </div>
+<h3>2. Вечер:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 17:30, 18:15, 19:00<br/>
+<strong>Отправление от конечной:</strong> 17:30, 18:15, 19:00
+    </div>
+</div>
+<div class="route" data-route="4">
+<div class="radio-time"><label><input name="time_4" type="radio" value="morning"/> Утро</label><label><input name="time_4" type="radio" value="evening"/> Вечер</label></div><h2>Маршрут №4: мкр. Менделеево — Больничный комплекс</h2>
+<h3>1. Утро:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 06:30, 07:15, 08:00<br/>
+<strong>Отправление от конечной:</strong> 06:30, 07:15, 08:00
+    </div>
+<h3>2. Вечер:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 17:30, 18:15, 19:00<br/>
+<strong>Отправление от конечной:</strong> 17:30, 18:15, 19:00
+    </div>
+</div>
+<div class="route" data-route="5">
+<div class="radio-time"><label><input name="time_5" type="radio" value="morning"/> Утро</label><label><input name="time_5" type="radio" value="evening"/> Вечер</label></div><h2>Маршрут №5: Роща Журавского — Кремль — ЖДВ</h2>
+<h3>1. Утро:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 06:30, 07:15, 08:00<br/>
+<strong>Отправление от конечной:</strong> 06:30, 07:15, 08:00
+    </div>
+<h3>2. Вечер:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 17:30, 18:15, 19:00<br/>
+<strong>Отправление от конечной:</strong> 17:30, 18:15, 19:00
+    </div>
+</div>
+<div class="route" data-route="6П">
+<div class="radio-time"><label><input name="time_6П" type="radio" value="morning"/> Утро</label><label><input name="time_6П" type="radio" value="evening"/> Вечер</label></div><h2>Маршрут №6П: Кремль — улица Омская</h2>
+<h3>1. Утро:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 06:30, 07:15, 08:00<br/>
+<strong>Отправление от конечной:</strong> 06:30, 07:15, 08:00
+    </div>
+<h3>2. Вечер:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 17:30, 18:15, 19:00<br/>
+<strong>Отправление от конечной:</strong> 17:30, 18:15, 19:00
+    </div>
+</div>
+<div class="route" data-route="6Р">
+<div class="radio-time"><label><input name="time_6Р" type="radio" value="morning"/> Утро</label><label><input name="time_6Р" type="radio" value="evening"/> Вечер</label></div><h2>Маршрут №6Р: Кремль — Речной порт</h2>
+<h3>1. Утро:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 06:30, 07:15, 08:00<br/>
+<strong>Отправление от конечной:</strong> 06:30, 07:15, 08:00
+    </div>
+<h3>2. Вечер:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 17:30, 18:15, 19:00<br/>
+<strong>Отправление от конечной:</strong> 17:30, 18:15, 19:00
+    </div>
+</div>
+<div class="route" data-route="7">
+<div class="radio-time"><label><input name="time_7" type="radio" value="morning"/> Утро</label><label><input name="time_7" type="radio" value="evening"/> Вечер</label></div><h2>Маршрут №7: ДК "Синтез" — деревня Веснина (лето)</h2>
+<h3>1. Утро:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 06:30, 07:15, 08:00<br/>
+<strong>Отправление от конечной:</strong> 06:30, 07:15, 08:00
+    </div>
+<h3>2. Вечер:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 17:30, 18:15, 19:00<br/>
+<strong>Отправление от конечной:</strong> 17:30, 18:15, 19:00
+    </div>
+</div>
+<div class="route" data-route="8">
+<div class="radio-time"><label><input name="time_8" type="radio" value="morning"/> Утро</label><label><input name="time_8" type="radio" value="evening"/> Вечер</label></div><h2>Маршрут №8: переулок Озёрный (мкр. Защитино) — Стадион "Тобол"</h2>
+<h3>1. Утро:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 06:30, 07:15, 08:00<br/>
+<strong>Отправление от конечной:</strong> 06:30, 07:15, 08:00
+    </div>
+<h3>2. Вечер:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 17:30, 18:15, 19:00<br/>
+<strong>Отправление от конечной:</strong> 17:30, 18:15, 19:00
+    </div>
+</div>
+<div class="route" data-route="9">
+<div class="radio-time"><label><input name="time_9" type="radio" value="morning"/> Утро</label><label><input name="time_9" type="radio" value="evening"/> Вечер</label></div><h2>Маршрут №9: Кремль — ЗАГС</h2>
+<h3>1. Утро:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 06:30, 07:15, 08:00<br/>
+<strong>Отправление от конечной:</strong> 06:30, 07:15, 08:00
+    </div>
+<h3>2. Вечер:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 17:30, 18:15, 19:00<br/>
+<strong>Отправление от конечной:</strong> 17:30, 18:15, 19:00
+    </div>
+</div>
+<div class="route" data-route="10">
+<div class="radio-time"><label><input name="time_10" type="radio" value="morning"/> Утро</label><label><input name="time_10" type="radio" value="evening"/> Вечер</label></div><h2>Маршрут №10: 7 мкр. — Храм Андрея Первозванного</h2>
+<h3>1. Утро:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 06:30, 07:15, 08:00<br/>
+<strong>Отправление от конечной:</strong> 06:30, 07:15, 08:00
+    </div>
+<h3>2. Вечер:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 17:30, 18:15, 19:00<br/>
+<strong>Отправление от конечной:</strong> 17:30, 18:15, 19:00
+    </div>
+</div>
+<div class="route" data-route="10а">
+<div class="radio-time"><label><input name="time_10а" type="radio" value="morning"/> Утро</label><label><input name="time_10а" type="radio" value="evening"/> Вечер</label></div><h2>Маршрут №10а: 7 мкр. — улица Алябьева</h2>
+<h3>1. Утро:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 06:30, 07:15, 08:00<br/>
+<strong>Отправление от конечной:</strong> 06:30, 07:15, 08:00
+    </div>
+<h3>2. Вечер:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 17:30, 18:15, 19:00<br/>
+<strong>Отправление от конечной:</strong> 17:30, 18:15, 19:00
+    </div>
+</div>
+<div class="route" data-route="11">
+<div class="radio-time"><label><input name="time_11" type="radio" value="morning"/> Утро</label><label><input name="time_11" type="radio" value="evening"/> Вечер</label></div><h2>Маршрут №11: Бекерево (левый берег) — Школа №8</h2>
+<h3>1. Утро:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 06:30, 07:15, 08:00<br/>
+<strong>Отправление от конечной:</strong> 06:30, 07:15, 08:00
+    </div>
+<h3>2. Вечер:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 17:30, 18:15, 19:00<br/>
+<strong>Отправление от конечной:</strong> 17:30, 18:15, 19:00
+    </div>
+</div>
+<div class="route" data-route="12">
+<div class="radio-time"><label><input name="time_12" type="radio" value="morning"/> Утро</label><label><input name="time_12" type="radio" value="evening"/> Вечер</label></div><h2>Маршрут №12: 7 мкр. — Берег</h2>
+<h3>1. Утро:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 06:30, 07:15, 08:00<br/>
+<strong>Отправление от конечной:</strong> 06:30, 07:15, 08:00
+    </div>
+<h3>2. Вечер:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 17:30, 18:15, 19:00<br/>
+<strong>Отправление от конечной:</strong> 17:30, 18:15, 19:00
+    </div>
+</div>
+<div class="route" data-route="14">
+<div class="radio-time"><label><input name="time_14" type="radio" value="morning"/> Утро</label><label><input name="time_14" type="radio" value="evening"/> Вечер</label></div><h2>Маршрут №14: ДК "Синтез" — СНТСН "Возрождение" (лето)</h2>
+<h3>1. Утро:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 06:30, 07:15, 08:00<br/>
+<strong>Отправление от конечной:</strong> 06:30, 07:15, 08:00
+    </div>
+<h3>2. Вечер:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 17:30, 18:15, 19:00<br/>
+<strong>Отправление от конечной:</strong> 17:30, 18:15, 19:00
+    </div>
+</div>
+<div class="route" data-route="15">
+<div class="radio-time"><label><input name="time_15" type="radio" value="morning"/> Утро</label><label><input name="time_15" type="radio" value="evening"/> Вечер</label></div><h2>Маршрут №15: Автовокзал — мкр. Жуковка</h2>
+<h3>1. Утро:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 06:30, 07:15, 08:00<br/>
+<strong>Отправление от конечной:</strong> 06:30, 07:15, 08:00
+    </div>
+<h3>2. Вечер:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 17:30, 18:15, 19:00<br/>
+<strong>Отправление от конечной:</strong> 17:30, 18:15, 19:00
+    </div>
+</div>
+<div class="route" data-route="16">
+<div class="radio-time"><label><input name="time_16" type="radio" value="morning"/> Утро</label><label><input name="time_16" type="radio" value="evening"/> Вечер</label></div><h2>Маршрут №16: Центр гимнастики — Родничок — Кремль</h2>
+<h3>1. Утро:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 06:30, 07:15, 08:00<br/>
+<strong>Отправление от конечной:</strong> 06:30, 07:15, 08:00
+    </div>
+<h3>2. Вечер:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 17:30, 18:15, 19:00<br/>
+<strong>Отправление от конечной:</strong> 17:30, 18:15, 19:00
+    </div>
+</div>
+<div class="route" data-route="17">
+<div class="radio-time"><label><input name="time_17" type="radio" value="morning"/> Утро</label><label><input name="time_17" type="radio" value="evening"/> Вечер</label></div><h2>Маршрут №17: ДК "Синтез" — Парк "Ермаково поле" (лето)</h2>
+<h3>1. Утро:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 06:30, 07:15, 08:00<br/>
+<strong>Отправление от конечной:</strong> 06:30, 07:15, 08:00
+    </div>
+<h3>2. Вечер:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 17:30, 18:15, 19:00<br/>
+<strong>Отправление от конечной:</strong> 17:30, 18:15, 19:00
+    </div>
+</div>
+<div class="route" data-route="19">
+<div class="radio-time"><label><input name="time_19" type="radio" value="morning"/> Утро</label><label><input name="time_19" type="radio" value="evening"/> Вечер</label></div><h2>Маршрут №19: Кремль — улица Ямальская — улица Омская</h2>
+<h3>1. Утро:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 06:30, 07:15, 08:00<br/>
+<strong>Отправление от конечной:</strong> 06:30, 07:15, 08:00
+    </div>
+<h3>2. Вечер:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 17:30, 18:15, 19:00<br/>
+<strong>Отправление от конечной:</strong> 17:30, 18:15, 19:00
+    </div>
+</div>
+<div class="route" data-route="19Э">
+<div class="radio-time"><label><input name="time_19Э" type="radio" value="morning"/> Утро</label><label><input name="time_19Э" type="radio" value="evening"/> Вечер</label></div><h2>Маршрут №19Э: Кремль — улица Ямальская — улица Элеваторная</h2>
+<h3>1. Утро:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 06:30, 07:15, 08:00<br/>
+<strong>Отправление от конечной:</strong> 06:30, 07:15, 08:00
+    </div>
+<h3>2. Вечер:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 17:30, 18:15, 19:00<br/>
+<strong>Отправление от конечной:</strong> 17:30, 18:15, 19:00
+    </div>
+</div>
+<div class="route" data-route="20">
+<div class="radio-time"><label><input name="time_20" type="radio" value="morning"/> Утро</label><label><input name="time_20" type="radio" value="evening"/> Вечер</label></div><h2>Маршрут №20: мкр. Менделеево — Кремль</h2>
+<h3>1. Утро:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 06:30, 07:15, 08:00<br/>
+<strong>Отправление от конечной:</strong> 06:30, 07:15, 08:00
+    </div>
+<h3>2. Вечер:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 17:30, 18:15, 19:00<br/>
+<strong>Отправление от конечной:</strong> 17:30, 18:15, 19:00
+    </div>
+</div>
+<div class="route" data-route="20Р">
+<div class="radio-time"><label><input name="time_20Р" type="radio" value="morning"/> Утро</label><label><input name="time_20Р" type="radio" value="evening"/> Вечер</label></div><h2>Маршрут №20Р: переулок Рабочий — мкр. Менделеево</h2>
+<h3>1. Утро:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 06:30, 07:15, 08:00<br/>
+<strong>Отправление от конечной:</strong> 06:30, 07:15, 08:00
+    </div>
+<h3>2. Вечер:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 17:30, 18:15, 19:00<br/>
+<strong>Отправление от конечной:</strong> 17:30, 18:15, 19:00
+    </div>
+</div>
+<div class="route" data-route="22">
+<div class="radio-time"><label><input name="time_22" type="radio" value="morning"/> Утро</label><label><input name="time_22" type="radio" value="evening"/> Вечер</label></div><h2>Маршрут №22: 7 мкр. — мкр. Ершовка</h2>
+<h3>1. Утро:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 06:30, 07:15, 08:00<br/>
+<strong>Отправление от конечной:</strong> 06:30, 07:15, 08:00
+    </div>
+<h3>2. Вечер:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 17:30, 18:15, 19:00<br/>
+<strong>Отправление от конечной:</strong> 17:30, 18:15, 19:00
+    </div>
+</div>
+<div class="route" data-route="24">
+<div class="radio-time"><label><input name="time_24" type="radio" value="morning"/> Утро</label><label><input name="time_24" type="radio" value="evening"/> Вечер</label></div><h2>Маршрут №24: Центр гимнастики — ТЭЦ — АБК ЗСНХ (Сибур)</h2>
+<h3>1. Утро:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 06:30, 07:15, 08:00<br/>
+<strong>Отправление от конечной:</strong> 06:30, 07:15, 08:00
+    </div>
+<h3>2. Вечер:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 17:30, 18:15, 19:00<br/>
+<strong>Отправление от конечной:</strong> 17:30, 18:15, 19:00
+    </div>
+</div>
+<div class="route" data-route="26">
+<div class="radio-time"><label><input name="time_26" type="radio" value="morning"/> Утро</label><label><input name="time_26" type="radio" value="evening"/> Вечер</label></div><h2>Маршрут №26: улица Ямальская — ТК Керама — ЦУМ</h2>
+<h3>1. Утро:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 06:30, 07:15, 08:00<br/>
+<strong>Отправление от конечной:</strong> 06:30, 07:15, 08:00
+    </div>
+<h3>2. Вечер:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 17:30, 18:15, 19:00<br/>
+<strong>Отправление от конечной:</strong> 17:30, 18:15, 19:00
+    </div>
+</div>
+<div class="route" data-route="101">
+<div class="radio-time"><label><input name="time_101" type="radio" value="morning"/> Утро</label><label><input name="time_101" type="radio" value="evening"/> Вечер</label></div><h2>Маршрут №101: АВ Тобольск — Татарские Медянки (через Будалино)</h2>
+<h3>1. Утро:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 06:30, 07:15, 08:00<br/>
+<strong>Отправление от конечной:</strong> 06:30, 07:15, 08:00
+    </div>
+<h3>2. Вечер:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 17:30, 18:15, 19:00<br/>
+<strong>Отправление от конечной:</strong> 17:30, 18:15, 19:00
+    </div>
+</div>
+<div class="route" data-route="102">
+<div class="radio-time"><label><input name="time_102" type="radio" value="morning"/> Утро</label><label><input name="time_102" type="radio" value="evening"/> Вечер</label></div><h2>Маршрут №102: АВ Тобольск — п. Прииртышский (зима)</h2>
+<h3>1. Утро:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 06:30, 07:15, 08:00<br/>
+<strong>Отправление от конечной:</strong> 06:30, 07:15, 08:00
+    </div>
+<h3>2. Вечер:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 17:30, 18:15, 19:00<br/>
+<strong>Отправление от конечной:</strong> 17:30, 18:15, 19:00
+    </div>
+</div>
+<div class="route" data-route="103">
+<div class="radio-time"><label><input name="time_103" type="radio" value="morning"/> Утро</label><label><input name="time_103" type="radio" value="evening"/> Вечер</label></div><h2>Маршрут №103: АВ Тобольск — Большая Блинникова (через Карачино)</h2>
+<h3>1. Утро:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 06:30, 07:15, 08:00<br/>
+<strong>Отправление от конечной:</strong> 06:30, 07:15, 08:00
+    </div>
+<h3>2. Вечер:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 17:30, 18:15, 19:00<br/>
+<strong>Отправление от конечной:</strong> 17:30, 18:15, 19:00
+    </div>
+</div>
+<div class="route" data-route="104">
+<div class="radio-time"><label><input name="time_104" type="radio" value="morning"/> Утро</label><label><input name="time_104" type="radio" value="evening"/> Вечер</label></div><h2>Маршрут №104: АВ Тобольск — Абалак — Епанчина</h2>
+<h3>1. Утро:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 06:30, 07:15, 08:00<br/>
+<strong>Отправление от конечной:</strong> 06:30, 07:15, 08:00
+    </div>
+<h3>2. Вечер:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 17:30, 18:15, 19:00<br/>
+<strong>Отправление от конечной:</strong> 17:30, 18:15, 19:00
+    </div>
+</div>
+<div class="route" data-route="106">
+<div class="radio-time"><label><input name="time_106" type="radio" value="morning"/> Утро</label><label><input name="time_106" type="radio" value="evening"/> Вечер</label></div><h2>Маршрут №106: Бекерево — Корикова (через Овсянникова)</h2>
+<h3>1. Утро:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 06:30, 07:15, 08:00<br/>
+<strong>Отправление от конечной:</strong> 06:30, 07:15, 08:00
+    </div>
+<h3>2. Вечер:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 17:30, 18:15, 19:00<br/>
+<strong>Отправление от конечной:</strong> 17:30, 18:15, 19:00
+    </div>
+</div>
+<div class="route" data-route="107">
+<div class="radio-time"><label><input name="time_107" type="radio" value="morning"/> Утро</label><label><input name="time_107" type="radio" value="evening"/> Вечер</label></div><h2>Маршрут №107: АВ Тобольск — мкр. Сумкино</h2>
+<h3>1. Утро:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 06:30, 07:15, 08:00<br/>
+<strong>Отправление от конечной:</strong> 06:30, 07:15, 08:00
+    </div>
+<h3>2. Вечер:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 17:30, 18:15, 19:00<br/>
+<strong>Отправление от конечной:</strong> 17:30, 18:15, 19:00
+    </div>
+</div>
+<div class="route" data-route="108">
+<div class="radio-time"><label><input name="time_108" type="radio" value="morning"/> Утро</label><label><input name="time_108" type="radio" value="evening"/> Вечер</label></div><h2>Маршрут №108: АВ Тобольск — Малая Зоркальцева</h2>
+<h3>1. Утро:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 06:30, 07:15, 08:00<br/>
+<strong>Отправление от конечной:</strong> 06:30, 07:15, 08:00
+    </div>
+<h3>2. Вечер:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 17:30, 18:15, 19:00<br/>
+<strong>Отправление от конечной:</strong> 17:30, 18:15, 19:00
+    </div>
+</div>
+<div class="route" data-route="109">
+<div class="radio-time"><label><input name="time_109" type="radio" value="morning"/> Утро</label><label><input name="time_109" type="radio" value="evening"/> Вечер</label></div><h2>Маршрут №109: ДК "Синтез" — Дачи "Здоровье" (лето)</h2>
+<h3>1. Утро:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 06:30, 07:15, 08:00<br/>
+<strong>Отправление от конечной:</strong> 06:30, 07:15, 08:00
+    </div>
+<h3>2. Вечер:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 17:30, 18:15, 19:00<br/>
+<strong>Отправление от конечной:</strong> 17:30, 18:15, 19:00
+    </div>
+</div>
+<div class="route" data-route="110">
+<div class="radio-time"><label><input name="time_110" type="radio" value="morning"/> Утро</label><label><input name="time_110" type="radio" value="evening"/> Вечер</label></div><h2>Маршрут №110: АВ Тобольск — Соколовка (лето)</h2>
+<h3>1. Утро:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 06:30, 07:15, 08:00<br/>
+<strong>Отправление от конечной:</strong> 06:30, 07:15, 08:00
+    </div>
+<h3>2. Вечер:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 17:30, 18:15, 19:00<br/>
+<strong>Отправление от конечной:</strong> 17:30, 18:15, 19:00
+    </div>
+</div>
+<div class="route" data-route="112">
+<div class="radio-time"><label><input name="time_112" type="radio" value="morning"/> Утро</label><label><input name="time_112" type="radio" value="evening"/> Вечер</label></div><h2>Маршрут №112: АВ Тобольск — Малая Зоркальцева (через Абрамова, лето)</h2>
+<h3>1. Утро:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 06:30, 07:15, 08:00<br/>
+<strong>Отправление от конечной:</strong> 06:30, 07:15, 08:00
+    </div>
+<h3>2. Вечер:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 17:30, 18:15, 19:00<br/>
+<strong>Отправление от конечной:</strong> 17:30, 18:15, 19:00
+    </div>
+</div>
+<div class="route" data-route="113">
+<div class="radio-time"><label><input name="time_113" type="radio" value="morning"/> Утро</label><label><input name="time_113" type="radio" value="evening"/> Вечер</label></div><h2>Маршрут №113: Бекерево — Сетово</h2>
+<h3>1. Утро:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 06:30, 07:15, 08:00<br/>
+<strong>Отправление от конечной:</strong> 06:30, 07:15, 08:00
+    </div>
+<h3>2. Вечер:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 17:30, 18:15, 19:00<br/>
+<strong>Отправление от конечной:</strong> 17:30, 18:15, 19:00
+    </div>
+</div>
+<div class="route" data-route="115">
+<div class="radio-time"><label><input name="time_115" type="radio" value="morning"/> Утро</label><label><input name="time_115" type="radio" value="evening"/> Вечер</label></div><h2>Маршрут №115: АВ Тобольск — п. Прииртышский — дачи "Заречный" (лето)</h2>
+<h3>1. Утро:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 06:30, 07:15, 08:00<br/>
+<strong>Отправление от конечной:</strong> 06:30, 07:15, 08:00
+    </div>
+<h3>2. Вечер:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 17:30, 18:15, 19:00<br/>
+<strong>Отправление от конечной:</strong> 17:30, 18:15, 19:00
+    </div>
+</div>
+<div class="route" data-route="116">
+<div class="radio-time"><label><input name="time_116" type="radio" value="morning"/> Утро</label><label><input name="time_116" type="radio" value="evening"/> Вечер</label></div><h2>Маршрут №116: ДК "Синтез" — мкр. Менделеево — дачи "Здоровье" (лето)</h2>
+<h3>1. Утро:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 06:30, 07:15, 08:00<br/>
+<strong>Отправление от конечной:</strong> 06:30, 07:15, 08:00
+    </div>
+<h3>2. Вечер:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 17:30, 18:15, 19:00<br/>
+<strong>Отправление от конечной:</strong> 17:30, 18:15, 19:00
+    </div>
+</div>
+<div class="route" data-route="119">
+<div class="radio-time"><label><input name="time_119" type="radio" value="morning"/> Утро</label><label><input name="time_119" type="radio" value="evening"/> Вечер</label></div><h2>Маршрут №119: АВ Тобольск — Октябрьский</h2>
+<h3>1. Утро:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 06:30, 07:15, 08:00<br/>
+<strong>Отправление от конечной:</strong> 06:30, 07:15, 08:00
+    </div>
+<h3>2. Вечер:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 17:30, 18:15, 19:00<br/>
+<strong>Отправление от конечной:</strong> 17:30, 18:15, 19:00
+    </div>
+</div>
+<div class="route" data-route="120">
+<div class="radio-time"><label><input name="time_120" type="radio" value="morning"/> Утро</label><label><input name="time_120" type="radio" value="evening"/> Вечер</label></div><h2>Маршрут №120: АВ Тобольск — Верхние Аремзяны</h2>
+<h3>1. Утро:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 06:30, 07:15, 08:00<br/>
+<strong>Отправление от конечной:</strong> 06:30, 07:15, 08:00
+    </div>
+<h3>2. Вечер:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 17:30, 18:15, 19:00<br/>
+<strong>Отправление от конечной:</strong> 17:30, 18:15, 19:00
+    </div>
+</div>
+<div class="route" data-route="120Р">
+<div class="radio-time"><label><input name="time_120Р" type="radio" value="morning"/> Утро</label><label><input name="time_120Р" type="radio" value="evening"/> Вечер</label></div><h2>Маршрут №120Р: АВ Тобольск — Ростошь</h2>
+<h3>1. Утро:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 06:30, 07:15, 08:00<br/>
+<strong>Отправление от конечной:</strong> 06:30, 07:15, 08:00
+    </div>
+<h3>2. Вечер:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 17:30, 18:15, 19:00<br/>
+<strong>Отправление от конечной:</strong> 17:30, 18:15, 19:00
+    </div>
+</div>
+<div class="route" data-route="124">
+<div class="radio-time"><label><input name="time_124" type="radio" value="morning"/> Утро</label><label><input name="time_124" type="radio" value="evening"/> Вечер</label></div><h2>Маршрут №124: Бекерево — Савинский затон</h2>
+<h3>1. Утро:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 06:30, 07:15, 08:00<br/>
+<strong>Отправление от конечной:</strong> 06:30, 07:15, 08:00
+    </div>
+<h3>2. Вечер:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 17:30, 18:15, 19:00<br/>
+<strong>Отправление от конечной:</strong> 17:30, 18:15, 19:00
+    </div>
+</div>
+<div class="route" data-route="125">
+<div class="radio-time"><label><input name="time_125" type="radio" value="morning"/> Утро</label><label><input name="time_125" type="radio" value="evening"/> Вечер</label></div><h2>Маршрут №125: АВ Тобольск — поворот на Ломаева</h2>
+<h3>1. Утро:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 06:30, 07:15, 08:00<br/>
+<strong>Отправление от конечной:</strong> 06:30, 07:15, 08:00
+    </div>
+<h3>2. Вечер:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 17:30, 18:15, 19:00<br/>
+<strong>Отправление от конечной:</strong> 17:30, 18:15, 19:00
+    </div>
+</div>
+<div class="route" data-route="130">
+<div class="radio-time"><label><input name="time_130" type="radio" value="morning"/> Утро</label><label><input name="time_130" type="radio" value="evening"/> Вечер</label></div><h2>Маршрут №130: АВ Тобольск — мкр. Сумкино — дачи "Виктория-1"</h2>
+<h3>1. Утро:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 06:30, 07:15, 08:00<br/>
+<strong>Отправление от конечной:</strong> 06:30, 07:15, 08:00
+    </div>
+<h3>2. Вечер:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 17:30, 18:15, 19:00<br/>
+<strong>Отправление от конечной:</strong> 17:30, 18:15, 19:00
+    </div>
+</div>
+<div class="route" data-route="501">
+<div class="radio-time"><label><input name="time_501" type="radio" value="morning"/> Утро</label><label><input name="time_501" type="radio" value="evening"/> Вечер</label></div><h2>Маршрут №501: Бекерево — Ушарова</h2>
+<h3>1. Утро:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 06:30, 07:15, 08:00<br/>
+<strong>Отправление от конечной:</strong> 06:30, 07:15, 08:00
+    </div>
+<h3>2. Вечер:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 17:30, 18:15, 19:00<br/>
+<strong>Отправление от конечной:</strong> 17:30, 18:15, 19:00
+    </div>
+</div>
+<div class="route" data-route="502Х">
+<div class="radio-time"><label><input name="time_502Х" type="radio" value="morning"/> Утро</label><label><input name="time_502Х" type="radio" value="evening"/> Вечер</label></div><h2>Маршрут №502Х: АВ Тобольск — Худякова</h2>
+<h3>1. Утро:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 06:30, 07:15, 08:00<br/>
+<strong>Отправление от конечной:</strong> 06:30, 07:15, 08:00
+    </div>
+<h3>2. Вечер:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 17:30, 18:15, 19:00<br/>
+<strong>Отправление от конечной:</strong> 17:30, 18:15, 19:00
+    </div>
+</div>
+<div class="route" data-route="502Б">
+<div class="radio-time"><label><input name="time_502Б" type="radio" value="morning"/> Утро</label><label><input name="time_502Б" type="radio" value="evening"/> Вечер</label></div><h2>Маршрут №502Б: АВ Тобольск — Новая Бишура (через Качипова)</h2>
+<h3>1. Утро:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 06:30, 07:15, 08:00<br/>
+<strong>Отправление от конечной:</strong> 06:30, 07:15, 08:00
+    </div>
+<h3>2. Вечер:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 17:30, 18:15, 19:00<br/>
+<strong>Отправление от конечной:</strong> 17:30, 18:15, 19:00
+    </div>
+</div>
+<div class="route" data-route="502ХБ">
+<div class="radio-time"><label><input name="time_502ХБ" type="radio" value="morning"/> Утро</label><label><input name="time_502ХБ" type="radio" value="evening"/> Вечер</label></div><h2>Маршрут №502ХБ: АВ Тобольск — Худякова — Булашова</h2>
+<h3>1. Утро:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 06:30, 07:15, 08:00<br/>
+<strong>Отправление от конечной:</strong> 06:30, 07:15, 08:00
+    </div>
+<h3>2. Вечер:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 17:30, 18:15, 19:00<br/>
+<strong>Отправление от конечной:</strong> 17:30, 18:15, 19:00
+    </div>
+</div>
+<div class="route" data-route="503">
+<div class="radio-time"><label><input name="time_503" type="radio" value="morning"/> Утро</label><label><input name="time_503" type="radio" value="evening"/> Вечер</label></div><h2>Маршрут №503: АВ Тобольск — Старицкие (через Ворогушино)</h2>
+<h3>1. Утро:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 06:30, 07:15, 08:00<br/>
+<strong>Отправление от конечной:</strong> 06:30, 07:15, 08:00
+    </div>
+<h3>2. Вечер:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 17:30, 18:15, 19:00<br/>
+<strong>Отправление от конечной:</strong> 17:30, 18:15, 19:00
+    </div>
+</div>
+<div class="route" data-route="504">
+<div class="radio-time"><label><input name="time_504" type="radio" value="morning"/> Утро</label><label><input name="time_504" type="radio" value="evening"/> Вечер</label></div><h2>Маршрут №504: АВ Тобольск — Лыткина (через Шестакова)</h2>
+<h3>1. Утро:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 06:30, 07:15, 08:00<br/>
+<strong>Отправление от конечной:</strong> 06:30, 07:15, 08:00
+    </div>
+<h3>2. Вечер:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 17:30, 18:15, 19:00<br/>
+<strong>Отправление от конечной:</strong> 17:30, 18:15, 19:00
+    </div>
+</div>
+<div class="route" data-route="507">
+<div class="radio-time"><label><input name="time_507" type="radio" value="morning"/> Утро</label><label><input name="time_507" type="radio" value="evening"/> Вечер</label></div><h2>Маршрут №507: АВ Тобольск — Тахтаир</h2>
+<h3>1. Утро:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 06:30, 07:15, 08:00<br/>
+<strong>Отправление от конечной:</strong> 06:30, 07:15, 08:00
+    </div>
+<h3>2. Вечер:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 17:30, 18:15, 19:00<br/>
+<strong>Отправление от конечной:</strong> 17:30, 18:15, 19:00
+    </div>
+</div>
+<div class="route" data-route="534">
+<div class="radio-time"><label><input name="time_534" type="radio" value="morning"/> Утро</label><label><input name="time_534" type="radio" value="evening"/> Вечер</label></div><h2>Маршрут №534: АВ Тобольск — АС Вагай (Северный)</h2>
+<h3>1. Утро:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 06:30, 07:15, 08:00<br/>
+<strong>Отправление от конечной:</strong> 06:30, 07:15, 08:00
+    </div>
+<h3>2. Вечер:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 17:30, 18:15, 19:00<br/>
+<strong>Отправление от конечной:</strong> 17:30, 18:15, 19:00
+    </div>
+</div>
+<div class="route" data-route="535">
+<div class="radio-time"><label><input name="time_535" type="radio" value="morning"/> Утро</label><label><input name="time_535" type="radio" value="evening"/> Вечер</label></div><h2>Маршрут №535: АВ Тобольск — Надцы</h2>
+<h3>1. Утро:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 06:30, 07:15, 08:00<br/>
+<strong>Отправление от конечной:</strong> 06:30, 07:15, 08:00
+    </div>
+<h3>2. Вечер:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 17:30, 18:15, 19:00<br/>
+<strong>Отправление от конечной:</strong> 17:30, 18:15, 19:00
+    </div>
+</div>
+<div class="route" data-route="536">
+<div class="radio-time"><label><input name="time_536" type="radio" value="morning"/> Утро</label><label><input name="time_536" type="radio" value="evening"/> Вечер</label></div><h2>Маршрут №536: АВ Тобольск — Абалак — Инжура</h2>
+<h3>1. Утро:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 06:30, 07:15, 08:00<br/>
+<strong>Отправление от конечной:</strong> 06:30, 07:15, 08:00
+    </div>
+<h3>2. Вечер:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 17:30, 18:15, 19:00<br/>
+<strong>Отправление от конечной:</strong> 17:30, 18:15, 19:00
+    </div>
+</div>
+<div class="route" data-route="537">
+<div class="radio-time"><label><input name="time_537" type="radio" value="morning"/> Утро</label><label><input name="time_537" type="radio" value="evening"/> Вечер</label></div><h2>Маршрут №537: АВ Тобольск — АС Байкалово (через Ушакова)</h2>
+<h3>1. Утро:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 06:30, 07:15, 08:00<br/>
+<strong>Отправление от конечной:</strong> 06:30, 07:15, 08:00
+    </div>
+<h3>2. Вечер:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 17:30, 18:15, 19:00<br/>
+<strong>Отправление от конечной:</strong> 17:30, 18:15, 19:00
+    </div>
+</div>
+<div class="route" data-route="538">
+<div class="radio-time"><label><input name="time_538" type="radio" value="morning"/> Утро</label><label><input name="time_538" type="radio" value="evening"/> Вечер</label></div><h2>Маршрут №538: АВ Тобольск — Абалак — Юрты Бегишевские</h2>
+<h3>1. Утро:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 06:30, 07:15, 08:00<br/>
+<strong>Отправление от конечной:</strong> 06:30, 07:15, 08:00
+    </div>
+<h3>2. Вечер:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 17:30, 18:15, 19:00<br/>
+<strong>Отправление от конечной:</strong> 17:30, 18:15, 19:00
+    </div>
+</div>
+<div class="route" data-route="539">
+<div class="radio-time"><label><input name="time_539" type="radio" value="morning"/> Утро</label><label><input name="time_539" type="radio" value="evening"/> Вечер</label></div><h2>Маршрут №539: АВ Тобольск — Абалак — Байгара</h2>
+<h3>1. Утро:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 06:30, 07:15, 08:00<br/>
+<strong>Отправление от конечной:</strong> 06:30, 07:15, 08:00
+    </div>
+<h3>2. Вечер:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 17:30, 18:15, 19:00<br/>
+<strong>Отправление от конечной:</strong> 17:30, 18:15, 19:00
+    </div>
+</div>
+<div class="route" data-route="555">
+<div class="radio-time"><label><input name="time_555" type="radio" value="morning"/> Утро</label><label><input name="time_555" type="radio" value="evening"/> Вечер</label></div><h2>Маршрут №555: АВ Тобольск — Тюмень АВ</h2>
+<h3>1. Утро:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 06:30, 07:15, 08:00<br/>
+<strong>Отправление от конечной:</strong> 06:30, 07:15, 08:00
+    </div>
+<h3>2. Вечер:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 17:30, 18:15, 19:00<br/>
+<strong>Отправление от конечной:</strong> 17:30, 18:15, 19:00
+    </div>
+</div>
+<div class="route" data-route="555Э">
+<div class="radio-time"><label><input name="time_555Э" type="radio" value="morning"/> Утро</label><label><input name="time_555Э" type="radio" value="evening"/> Вечер</label></div><h2>Маршрут №555Э: АВ Тобольск — аэропорт Рощино — Тюмень АВ</h2>
+<h3>1. Утро:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 06:30, 07:15, 08:00<br/>
+<strong>Отправление от конечной:</strong> 06:30, 07:15, 08:00
+    </div>
+<h3>2. Вечер:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 17:30, 18:15, 19:00<br/>
+<strong>Отправление от конечной:</strong> 17:30, 18:15, 19:00
+    </div>
+</div>
+<div class="route" data-route="561">
+<div class="radio-time"><label><input name="time_561" type="radio" value="morning"/> Утро</label><label><input name="time_561" type="radio" value="evening"/> Вечер</label></div><h2>Маршрут №561: АВ Тобольск — АВ Ишим</h2>
+<h3>1. Утро:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 06:30, 07:15, 08:00<br/>
+<strong>Отправление от конечной:</strong> 06:30, 07:15, 08:00
+    </div>
+<h3>2. Вечер:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 17:30, 18:15, 19:00<br/>
+<strong>Отправление от конечной:</strong> 17:30, 18:15, 19:00
+    </div>
+</div>
+<div class="route" data-route="715">
+<div class="radio-time"><label><input name="time_715" type="radio" value="morning"/> Утро</label><label><input name="time_715" type="radio" value="evening"/> Вечер</label></div><h2>Маршрут №715: Тюмень АВ — Петропавловск АВ (Казахстан)</h2>
+<h3>1. Утро:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 06:30, 07:15, 08:00<br/>
+<strong>Отправление от конечной:</strong> 06:30, 07:15, 08:00
+    </div>
+<h3>2. Вечер:</h3>
+<div class="times">
+<strong>Отправление от начальной:</strong> 17:30, 18:15, 19:00<br/>
+<strong>Отправление от конечной:</strong> 17:30, 18:15, 19:00
+    </div>
+</div>
+</div>
+<script>
+document.getElementById('routeSelector').addEventListener('change', function () {
+    var selectedRoute = this.value;
+    var routes = document.querySelectorAll('.route');
+    routes.forEach(function(route) {
+        if (!selectedRoute || route.dataset.route === selectedRoute) {
+            route.style.display = 'block';
+        } else {
+            route.style.display = 'none';
+        }
+    });
+});
+</script></body>
+</html>
